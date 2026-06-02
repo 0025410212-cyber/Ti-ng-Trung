@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Luyện Phát Âm Tiếng Trung</title>
+    <style>
+        :root {
+            --primary-color: #de2910; /* Màu đỏ cờ Trung Quốc */
+            --secondary-color: #ffde00; /* Màu vàng */
+            --bg-color: #f7f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        select:focus {
+            border-color: var(--primary-color);
+        }
+
+        .phrase-display {
+            background-color: #fff9f9;
+            border: 2px dashed var(--primary-color);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .chinese-text {
+            font-size: 42px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .pinyin-text {
+            font-size: 18px;
+            color: #555;
+            margin: 5px 0 0 0;
+        }
+
+        .meaning-text {
+            font-size: 16px;
+            color: #777;
+            font-style: italic;
+            margin: 5px 0 0 0;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-listen {
+            background-color: #4cab50;
+            color: white;
+        }
+
+        .btn-listen:hover { background-color: #439a46; }
+
+        .btn-speak {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-speak:hover { background-color: #b8210d; }
+        
+        .btn-speak.recording {
+            animation: pulse 1.5s infinite;
+            background-color: #990000;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); box-shadow: 0 0 15px rgba(222, 41, 16, 0.5); }
+            100% { transform: scale(1); }
+        }
+
+        .result-box {
+            background-color: #f0f2f5;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 80px;
+            text-align: left;
+        }
+
+        .result-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .user-voice {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .correct { color: #4cab50; }
+        .wrong { color: var(--primary-color); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>汉语 Pīnyīn</h1>
+    <div class="subtitle">Ứng dụng luyện phát âm tiếng Trung miễn phí</div>
+
+    <div class="form-group">
+        <label for="phraseSelect">Chọn câu muốn luyện tập:</label>
+        <select id="phraseSelect" onchange="updatePhrase()">
+            <option value="你好" data-pinyin="Nǐ hǎo" data-meaning="Xin chào">你好 (Nǐ hǎo)</option>
+            <option value="谢谢" data-pinyin="Xièxiè" data-meaning="Cảm ơn">谢谢 (Xièxiè)</option>
+            <option value="再见" data-pinyin="Zàijiàn" data-meaning="Tạm biệt">再见 (Zàijiàn)</option>
+            <option value="我爱你" data-pinyin="Wǒ ài nǐ" data-meaning="Tôi yêu bạn">我爱你 (Wǒ ài nǐ)</option>
+            <option value="哪里哪里" data-pinyin="Nǎlǐ nǎlǐ" data-meaning="Đâu có, đâu có (khiêm tốn)">哪里哪里 (Nǎlǐ nǎlǐ)</option>
+            <option value="祝你 có một ngày tốt lành" data-pinyin="Zhù nǐ jīntiān yúkuài" data-meaning="Chúc bạn hôm nay vui vẻ" style="display:none;"></option>
+            <option value="祝你今天愉快" data-pinyin="Zhù nǐ jīntiān yúkuài" data-meaning="Chúc bạn ngày mới vui vẻ">祝你今天愉快</option>
+        </select>
+    </div>
+
+    <div class="phrase-display">
+        <p class="chinese-text" id="targetChinese">你好</p>
+        <p class="pinyin-text" id="targetPinyin">Nǐ hǎo</p>
+        <p class="meaning-text" id="targetMeaning">Nghĩa: Xin chào</p>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-listen" onclick="listenSample()">🔊 Nghe mẫu</button>
+        <button class="btn-speak" id="speakBtn" onclick="startRecognition()">🎙️ Nhấn & Nói</button>
+    </div>
+
+    <div class="result-box">
+        <div class="result-title">Kết quả phân tích từ Google:</div>
+        <div id="userSpeech" class="user-voice">...</div>
+        <div id="feedback" class="feedback"></div>
+    </div>
+</div>
+
+<script>
+    // Khởi tạo các phần tử giao diện
+    const phraseSelect = document.getElementById('phraseSelect');
+    const targetChinese = document.getElementById('targetChinese');
+    const targetPinyin = document.getElementById('targetPinyin');
+    const targetMeaning = document.getElementById('targetMeaning');
+    const userSpeech = document.getElementById('userSpeech');
+    const feedback = document.getElementById('feedback');
+    const speakBtn = document.getElementById('speakBtn');
+
+    // Cập nhật từ vựng khi thay đổi select box
+    function updatePhrase() {
+        const selectedOption = phraseSelect.options[phraseSelect.selectedIndex];
+        targetChinese.innerText = selectedOption.value;
+        targetPinyin.innerText = selectedOption.getAttribute('data-pinyin');
+        targetMeaning.innerText = "Nghĩa: " + selectedOption.getAttribute('data-meaning');
+        
+        // Reset bảng kết quả
+        userSpeech.innerText = "...";
+        feedback.innerText = "";
+    }
+
+    // 1. CHỨC NĂNG NGHE MẪU (Google Text-to-Speech tích hợp)
+    function listenSample() {
+        const text = targetChinese.innerText;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'zh-CN'; // Cấu hình giọng Trung Quốc đại lục
+        utterance.rate = 0.8;    // Tốc độ đọc chậm một chút để dễ nghe (1.0 là bình thường)
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // 2. CHỨC NĂNG NHẬN DIỆN GIỌNG NÓI (Google Speech-to-Text tích hợp)
+    let recognition;
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = 'zh-CN'; // Nhận diện tiếng Trung
+        recognition.interimResults = false; // Chỉ lấy kết quả cuối cùng
+        recognition.maxAlternatives = 1;
+
+        // Khi bắt đầu nói
+        recognition.onstart = () => {
+            speakBtn.innerText = "🛑 Đang lắng nghe...";
+            speakBtn.classList.add('recording');
+            userSpeech.innerText = "Đang thu âm...";
+            feedback.innerText = "";
+        };
+
+        // Khi có kết quả trả về
+        recognition.onresult = (event) => {
+            const resultText = event.results[0][0].transcript;
+            // Xóa dấu câu nếu có để so sánh chính xác hơn
+            const cleanResult = resultText.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()？。，！]/g,"");
+            const cleanTarget = targetChinese.innerText.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()？。，！]/g,"");
+
+            userSpeech.innerText = cleanResult;
+
+            // So sánh kết quả của người dùng với từ mẫu
+            if (cleanResult === cleanTarget) {
+                feedback.innerHTML = "<span class='correct'>✓ Tuyệt vời! Bạn phát âm chuẩn xác rồi!</span>";
+            } else {
+                feedback.innerHTML = "<span class='wrong'>❌ Chưa chính xác. Hãy thử lại nhé!</span>";
+            }
+        };
+
+        // Khi kết thúc hoặc có lỗi
+        recognition.onerror = (event) => {
+            userSpeech.innerText = "Lỗi thu âm hoặc không nghe rõ.";
+            stopRecordingState();
+        };
+
+        recognition.onend = () => {
+            stopRecordingState();
+        };
+    } else {
+        alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói. Vui lòng dùng Google Chrome!");
+    }
+
+    function startRecognition() {
+        if(recognition) {
+            recognition.start();
+        }
+    }
+
+    function stopRecordingState() {
+        speakBtn.innerText = "🎙️ Nhấn & Nói";
+        speakBtn.classList.remove('recording');
+    }
+</script>
+
+</body>
+</html>
